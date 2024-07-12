@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Staff Home Page</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('staffhomeCtrl', function($scope, $http, $window) {
+				
+				$http.get("api/v1/users").then(
+						function(response) {
+							switch(response.data.message) {
+							case "CUSTOMER":
+								$window.location.href = '/customerhome';
+								break;
+							case "ADMIN":
+								$window.location.href = '/index';
+								break;
+							default:
+								break;
+							}
+						}, function(rejection) {
+							$window.location.href = '/index';
+					});
+				
+				$scope.fufillOrder = function() {
+					$window.location.href = '/fulfillorder';
+				};
+				
+				$scope.createRecipe = function() {
+					$window.location.href = '/recipe';
+				};
+				
+				$scope.editRecipe = function() {
+					$window.location.href = '/editrecipe';
+				};
+				
+				$scope.deleteRecipe = function() {
+					$window.location.href = '/deleterecipe';
+				};
+				
+				$scope.addIngredients = function() {
+					$window.location.href = '/addingredients';
+				};
+				
+				$scope.addInventory = function() {
+					$window.location.href = '/addinventory';
+				};
+				
+				$scope.viewOrderHistory = function() {
+					$window.location.href = '/orderhistorystaff';
+				};
+				
+				$scope.signOut = function() {
+					$http.put("api/v1/users").then( function(response) {
+						$window.location.href = '/index';
+					}, function(rejection) {
+						alert(reponse.data.message);
+					});
+				};
+			
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="staffhomeCtrl as ctrl">
+			
+			<!-- Title Section -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Staff - Home </h1>
+					<h2> Welcome to CoffeeMaker! </h2>
+				</div>
+				
+				<div>
+					<button type="button" class="button-signout" ng-click="signOut()">Sign Out</button>
+				</div>
+			</div>
+			
+			<!-- Content -->
+			<div class="flex-buttonhorizontal">
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button"  ng-click="fufillOrder()">Fulfill Order</button>
+				</div>
+				
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button"  ng-click="viewOrderHistory()">View Order History</button>
+				</div>
+				
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button" ng-click="createRecipe()">Create Recipe</button>
+					<button type="button" class="home-button" ng-click="editRecipe()">Edit Recipe</button>
+				</div>
+				
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button" ng-click="addIngredients()">Add Ingredients</button>
+					<button type="button" class="home-button" ng-click="addInventory()">Add Inventory</button>
+				</div>
+			</div>
+			
+		</div>
+	
+	</body>
+</html>

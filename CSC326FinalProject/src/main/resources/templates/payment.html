@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Customer Order</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('paymentCtrl', function($scope, $http, $window, $filter) {
+				
+				$http.get("api/v1/users").then(
+						function(response) {
+							switch(response.data.message) {
+							case "STAFF":
+								$window.location.href = '/staffhome';
+								break;
+							case "ADMIN":
+								$window.location.href = '/index';
+								break;
+							default:
+								break;
+							}
+						}, function(rejection) {
+							$window.location.href = '/index';
+				});
+				
+				$scope.selectedRecipe = {};
+				
+				$scope.orderTicket = {};
+				
+				$scope.currentUser = {}; 
+				
+				$scope.currentTime = new Date();
+				
+				var formatted = $filter('date')($scope.currentTime, 'yyyy-MM-dd HH:mm:ss');
+				
+				$http.get("api/v1/recipes/selectedRecipe").then(function(response) {
+					$scope.selectedRecipe = response.data;
+				})
+				
+				$http.get("api/v1/users/name").then(function(response) {
+					$scope.currentUser = response.data;
+				})
+				
+				$scope.placeOrder = function(recipe, amount) {
+					$scope.orderTicket.name = $scope.currentUser.name + '_' + recipe.name 
+						+ '_' + formatted;
+						
+					$scope.orderTicket.recipe = recipe;
+					
+					$scope.orderTicket.owner = $scope.currentUser.name;
+					
+					if (amount < recipe.price) {
+						$window.alert("Uh oh! The amount you entered isn\'t enough!");
+						return;
+					}
+					
+					$http.post("api/v1/order", $scope.orderTicket).then(function(response) {
+						return response.data;
+					})
+					
+					var change = amount - recipe.price;
+					
+					$window.alert('Order created successfully! Your change is ' + change + '. Directing you to home...');
+					
+					$window.location.href = '/customerhome';
+				}
+				
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="paymentCtrl as ctrl">
+				
+			<h1> Customer - Payment </h1>
+				<div class="flex-item">
+					<form name="myForm">
+						<div class="smol-container">
+							<div class="upper-box">
+								<h2>Enter Payment Information</h2>
+								<label for="fname">First name: </label>
+								<input type="text" required="true" class="textbox" id="fname" name="fname">
+								<br>
+								
+								<label for="lname">Last name: </label>
+								<input type="text" required="true" class="textbox" id="lname" name="lname">
+								<br>
+								
+								<label for="phone">Phone number: </label>
+								<input type="text" required="true" class="textbox" id="phone" name="phone">
+								<br>
+								
+								<h3>Credit Card Information</h3>
+								<label for="cardnum">Card Number: </label>
+								<input type="text" required="true" class="textbox" id="cardnum" name="cardnum">
+								<br>
+								
+								<label for="exp">Exp Date: </label>
+								<input type="text" required="true" class="textbox" id="exp" name="exp">
+								<br>
+								
+								<label for="cvv">CVV: </label>
+								<input type="text" required="true" class="textbox" id="cvv" name="cvv">
+								<br>
+							</div>
+						
+						</div>
+						<br>
+						<div class="smol-container" ng-show="selectedRecipe">
+							<div class="upper-box">
+							    <h2>Order Summary</h2>
+						        <h4>Name: {{selectedRecipe.name}}</h4>
+						        <h4>Price: {{selectedRecipe.price}}</h4>
+						        <label for="amount: ">Amount Paid: </label>
+								<input type="text" required="true" class="textbox" id="amount" name="amount" ng-model="amount">
+						        <button class="button" ng-disabled="myForm.$invalid" ng-click="placeOrder(selectedRecipe, amount)">Place Order</button>
+						        <div class="upper-box" ng-if="myForm.$submitted && amount < selectedRecipe.price">
+						        	<P style="color:red;">Please enter a valid amount to pay.<p>
+						        </div>
+					        </div>
+						</div>
+					</form>
+				</div>
+		</div>
+	
+	</body>
+</html>

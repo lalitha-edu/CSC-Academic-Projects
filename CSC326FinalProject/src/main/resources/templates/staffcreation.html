@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Login/Sign Up</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<body>
+	<script> 
+    /*<![CDATA[*/
+		var app = angular.module('myApp', []);
+		app.controller('recipesCtrl', function($scope, $http, $window) {
+			
+			$http.get("api/v1/users").then(
+					function(response) {
+						switch(response.data.message) {
+						case "STAFF":
+							$window.location.href = '/staffhome';
+							break;
+						case "CUSTOMER":
+							$window.location.href = '/customerhome';
+							break;
+						default:
+							break;
+						}
+					}, function(rejection) {
+						$window.location.href = '/index';
+				});
+			
+			$scope.loginData = {};
+			
+			$scope.registerData = {};
+			$scope.confirmPassword = {};
+			
+			
+			$scope.processLogin = function () {
+				console.log($scope.loginData);
+				$http.put("api/v1/users/" + $scope.loginData.name, $scope.loginData).then(
+						function(success) {
+							console.log(success.data.message);
+							// If successful, grab what user they are and send them to the correct home page
+							switch(success.data.message) {
+								case "CUSTOMER":
+									// MAP TO CUSTOMER HOME PAGE
+									$window.location.href = '/index';
+									break;
+									// MAP TO STAFF HOME PAGE
+								case "STAFF":
+									$window.location.href = '/index';
+									break;
+									// MAP TO ADMIN HOME (Should check if user is ADMIN)
+								case "ADMIN":
+									$window.location.href = '/index';
+									break;
+								default:
+									console.log("Type not read");
+							};
+						}).catch(function(error) {
+							console.log(error);
+							alert(error.data.message);
+						});
+			};
+			
+			$scope.processAccountCreation = function () {
+				// First check if passwords are the same
+				if($scope.confirmPassword.password != $scope.registerData.password) {
+					alert("Passwords Do Not Match");
+					return;
+				}
+				// If at this point, we set the type to CUSTOMER
+				$scope.registerData.type = 0;
+				console.log($scope.registerData);
+				$http.post("api/v1/users",  $scope.registerData).then(
+						function(response) {
+							$scope.registerData = {};
+							$scope.confirmPassword = {};
+						}).catch(function(error) {
+							$window.alert(error.data.message);
+						});
+			};
+			
+			$scope.togglePassword = function () { 
+				$scope.typePassword = !$scope.typePassword; 
+			};
+			
+			$scope.toggleRegisterPassword = function () { 
+				$scope.typeRegisterPassword = !$scope.typeRegisterPassword; 
+			};
+			
+		});
+	/*]]>*/
+	</script>
+
+	<div layout:fragment="content" class="generic-container ng-cloak"
+		ng-app="myApp" ng-controller="recipesCtrl as ctrl">
+
+		<h1>Coffee Maker - Admin</h1> <br>
+		<a href="/index">Back to Sign In</a>
+
+		<div class="flex-container">
+			 <div class="flex-item">
+			   <h2> Register Staff Account </h2>
+			   <form name="registerForm">
+			   		<label for="register_username">Username:</label>
+			   		<br>
+					<input name="register_username" placeholder="Username" type="text" required="true" ng-model="registerData.name"/>
+					<br> <br>
+					<label for="register_password">Password:</label>
+					<!-- Password toggle based on: https://stackoverflow.com/questions/29224920/how-can-we-make-show-hide-password-input-in-angular-js-with-bootstrap-3 -->
+					<span class="showPassword" ng-click="toggleRegisterPassword()"></span>
+					<br> 
+					<input type="{{ typeRegisterPassword ? 'text' : 'password' }}" name="password" placeholder="Password" required="true" ng-model="registerData.password"> 
+					<br>
+					<input type="{{ typeRegisterPassword ? 'text' : 'password' }}" name="confirmPassword" placeholder="Confirm Password" required="true" ng-model="confirmPassword.password"> 
+					<!-- An element to toggle between password visibility -->
+					<input type="checkbox" ng-click="toggleRegisterPassword()">Show Password
+					<br> <br>
+					<button type="button" ng-click="processAccountCreation()" ng-disabled="registerForm.$invalid">Add Account</button>
+			   	</form>
+			 </div>
+		</div>
+		
+	</div>
+
+
+
+</body>
+</html>

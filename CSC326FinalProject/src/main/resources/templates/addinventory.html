@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Inventory</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<!--- Header information about the page -->
+<body>
+	<div layout:fragment="content">
+		<script	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+		<script>
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*<![CDATA[*/ 
+			var app = angular.module('myApp', []);
+			app.controller('populateCtrl', function($scope, $http, $q, $window) {
+				
+				// First Check for Current user
+				$http.get("api/v1/users").then(
+					function(response) {
+						switch(response.data.message) {
+						case "CUSTOMER":
+							$window.location.href = '/customerhome';
+							break;
+						case "ADMIN":
+							$window.location.href = '/index';
+							break;
+						default:
+							break;
+						}
+					}, function(rejection) {
+						$window.location.href = '/index';
+				});
+				
+				$scope.inventory = {};
+				
+				$scope.ingredientData = [];
+				
+				// For when the page first opens
+				$http.get("api/v1/inventory").then(function(response) {
+					$scope.updateList();
+					
+				});
+				
+				$scope.updateList = function () {
+					$http.get("api/v1/inventory").then(function(response) {
+						$scope.inventory = response.data;
+						for (let i = 0; i < $scope.inventory.ingredients.length; i++) {
+							$scope.ingredientData[i] = {};
+							$scope.ingredientData[i].name = $scope.inventory.ingredients[i].name;
+							$scope.ingredientData[i].amount = 0;
+						}
+						console.log($scope.ingredientData);
+					});
+				};
+				
+				$scope.addInventory = function () {
+					$scope.inventory.ingredients = $scope.ingredientData;
+					$http.put("/api/v1/inventory", $scope.inventory).then(
+							function(response) {
+								$scope.updateList();
+							}, function(rejection) {
+								$scope.failure = true;
+								$scope.success = false;
+								alert("Error while updating Inventory!");
+								$scope.updateList();
+							});
+					$scope.updateList();
+					console.log($scope.inventory);
+				};
+				
+				$scope.backHome = function() {
+					$window.location.href = '/staffhome';
+				}
+			
+				
+			// END OF JS PORTION, DONT DELETE LINE BELOW
+			});
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*]]>*/
+		</script>
+
+		<div ng-app="myApp" ng-controller="populateCtrl">
+			<!-- Section for adding to inventory -->
+			<form name="myForm">
+
+				<!--- Various HTML elements, with extra tags telling Angular how to work with them, go here -->
+				<div class="flex-titlebar">
+					<div class="flex-item">
+						<h1> Add Inventory </h1>
+					</div>
+					
+					<div>
+						<button type="button" class="button-gohome" ng-click="backHome()">Back Home</button>
+					</div>
+				</div>
+
+				<div ng-repeat="ingredient in ingredientData track by $index">
+					<tt>{{ingredient.name}}: Current amount: {{inventory.ingredients[$index].amount}}</tt>
+					<input type="text" ng-model="ingredient.amount"/>
+				</div>
+				
+				
+				<!-- For Future notice, you can disable a button by checking if the textfields you want associated are invalid -->>
+				<button type="button" ng-click="addInventory()" ng-disabled="myForm.$invalid">Add to Inventory</button>
+			</form>
+			
+		</div>
+		
+	</div>
+
+</body>
+</html>

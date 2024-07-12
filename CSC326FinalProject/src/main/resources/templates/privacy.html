@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Privacy Policy</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('privacyCtrl', function($scope, $http, $window) {
+				
+				$scope.backHome = function() {
+					$window.location.href = '/index';
+				};
+			
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="privacyCtrl as ctrl"
+         
+			<!-- Title Section -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Privacy Policy </h1>
+				</div>
+				
+				<div class="container">
+					<h2>1. Applicability and Scope</h2>
+					<p>The policy applies to the website located at https://localhost:8080/coffeemaker.com. All links should move within the coffee maker website, 
+					if there are any other links that take you to a third-party website we are not responsible for the policies and practices for the third parties.</p>
+					<br>
+					<h2>2. Update to Policy</h2>
+					<p>This policy will periodically be updated as changes may be required with changes to the website along with connections and partnerships that may 
+					be added with third-party sources. As a user, if an update occurs, there will be a notification with the changes to policy will be sent out to the 
+					phone number associated with a user's billing information, optionally a user can choose to select a better contact method in the future when we begin 
+					to collect contact information.</p>
+					<br>
+					<h2>3. Collected Information on User</h2>
+					<p>When you use and interact with the CoffeeMaker Website we will need to collect information as the following:</p>
+						<ul>
+						<li>Username: When a user (staff or customer) wants to use our website, we require credentials to be made, one of which is a username. 
+						This username is collected for future reference when the same user wants to log into the website again.</li>
+
+						<li>Password: When a user (staff or customer) wants to use our website, we require credentials to be made, one of which is a password. 
+						To ensure that a user's data is safe, when a user creates an account we require them to create a password that is collected for future 
+						reference when the same user wants to log into the website again.</li>
+
+						<li>Order History: A user's order history is collected for upto 10 orders, this keeps track of the different coffee's that the user had requested 
+						along with the price of the order.</li>
+						</ul>
+
+					<p>Each coffee order requires a monetary payment, but currently, we do not collect user payment information for future reference.</p>
+					<br>
+					<h2>4. How collected information is used</h2>
+					<p>To Perform Our Services: The user credentials (username and password) collected are used for future reference so that the user can log back into 
+					the website again. This ensures that the user can access the services specific to them so staff can maintain the coffee maker and inventory while 
+					the customers can order and pick up their orders. The order history is also taken for each user as information that can be relayed back to the user 
+					as necessary to suggest different drinks based on the ongoing trends with their orders.
+
+					For Improvement of Our Services: To ensure that our service is at its utmost competence and that we are listening to our customer's preferences 
+					(ie. in the menu) the collected user order histories may be used to find trends on which coffee recipes are the most ordered, least ordered, etc. 
+					so that the coffees we sell can be modified or removed as necessary and so that we can add new recipes if certain ingredients are more liked than 
+					others as an example.</p>
+					<br>
+					<h2>5. How you can see what is collected</h2>
+					<p>This part of the CoffeeMaker is currently in progress and section will be updated once it is completed. The information collected on a user will be 
+					found in a separate page that the user can access. There will be a User Info page that can be accessed once a user logs in, this will provide information 
+					on the User's username and password fields that will be pre-filled with the collected information. There will be a separate page for view order history 
+					so the user can see what they have ordered in the past listing what is in each order.</p>
+					<br>
+					<h2>6. How data collected is stored/protected</h2>
+					<p>The data collected on a user is stored in a database, where each entry is specific to the user. This data is protected as only admin and staff can access 
+					the database information with a secured password for the database, no one else without the password can log in or access any point of the database. 
+					However, if we do detect risky behavior, we will notify you immediately through your preferred contact method where you can future take methods to keep 
+					your information protected (ie. change password, delete the account, multi-factor authentication).</p>
+					<br>
+					<h2>7. What you can do if privacy policy is not met</h2>
+					<p>In the case that the privacy policy is not met, a user can contact the customer service and administrators both through:
+
+					Company Email: coffeeMaker.policy@gmail.com
+
+					Phone Number: 919-999-9999
+
+					We are working on implementing a way for a user to have the option to delete their account and site a reason as Failure to adhere to the privacy policy.
+
+					</p>
+					
+					<button type="button" ng-click="backHome()">Home</button>
+				</div>
+			</div>	
+			
+		</div>
+	
+	</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Create Recipe</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+</head>
+<!--- Header information about the page -->
+<body>
+	<div layout:fragment="content">
+		<script	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+		<script>
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*<![CDATA[*/ 
+			var app = angular.module('myApp', []);
+			app.controller('populateCtrl', function($scope, $http, $q, $window) {
+
+				// First Check for Current user
+				$http.get("api/v1/users").then(
+					function(response) {
+						switch(response.data.message) {
+						case "CUSTOMER":
+							$window.location.href = '/customerhome';
+							break;
+						case "ADMIN":
+							$window.location.href = '/index';
+							break;
+						default:
+							break;
+						}
+					}, function(rejection) {
+						$window.location.href = '/index';
+				});
+				
+				$scope.recipe = {};
+				
+				$scope.selectedIngredients = [];
+				
+				$scope.recipeIngredients = [];
+				
+				// For when the page first opens to display Ingredients
+				$http.get("api/v1/inventory").then(function(response) {
+					$scope.updateIngredientList();
+				});
+				
+				$scope.updateIngredientList = function () {
+					$http.get("api/v1/inventory").then(function(response) {
+						$scope.ingredientData = response.data.ingredients;
+						for(let i = 0; i < $scope.ingredientData.length; i++) {
+							$scope.ingredientData[i].amount = 0;
+						}
+					});
+				};
+				
+				$scope.updateRecipeIngredients = function() {
+					$scope.recipe.ingredients = $scope.selectedIngredients;
+				};
+				
+				// For when the page first opens to display Recipes
+				$http.get("api/v1/recipes").then(function(response) {
+					$scope.recipeData = response.data;
+					console.log($scope.recipeData);
+				});
+				
+				$scope.updateRecipeList = function () {
+					$http.get("api/v1/recipes").then(function(response) {
+						$scope.recipeData = response.data;
+					});
+				};
+				
+				$scope.description = function() {
+					
+				}
+				
+				$scope.createRecipe = function () {
+					$scope.updateRecipeList();
+					$scope.findIngredients();
+					// Update recipe
+					$scope.recipe.ingredients = $scope.recipeIngredients;
+					$http.post("api/v1/recipes", $scope.recipe).then(
+							function(success) {
+								$scope.success = true;
+								$scope.updateRecipeList();
+								$scope.recipe = {};
+							}, function(rejection) {
+								alert("Invalid recipe");
+						});
+					// Uncheck all Things
+					$scope.selectedIngredients = [];
+					for(let j = 0; j < $scope.ingredientData.length; j++) {
+						$scope.ingredientData[j].amount = 0;
+						$scope.ingredientData[j].checked = false;
+					}
+					$scope.updateIngredientList();
+				};
+				
+				$scope.findIngredients = function () {
+					$scope.recipeIngredients = [];
+					for(let i = 0; i < $scope.selectedIngredients.length; i++) {
+						if($scope.selectedIngredients[i] == true) {
+							$scope.recipeIngredients.push({name: $scope.ingredientData[i].name, amount: $scope.ingredientData[i].amount})
+						}
+					}
+					console.log($scope.recipeIngredients);
+				};
+				
+				$scope.toggleIngredients = function(index) {
+					$scope.ingredientData[index].checked = !$scope.ingredientData[index].checked;
+				};
+				
+				$scope.backHome = function() {
+					$window.location.href = '/staffhome';
+				}
+
+			// END OF JS PORTION, DONT DELETE LINE BELOW
+			});
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*]]>*/
+		</script>
+		
+		<div ng-app="myApp" ng-controller="populateCtrl">
+
+			<!--- Various HTML elements, with extra tags telling Angular how to work with them, go here -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Create Recipes </h1>
+				</div>
+				
+				<div>
+					<button type="button" class="button-gohome" ng-click="backHome()">Back Home</button>
+				</div>
+			</div>
+			
+			<h2> Current Recipes </h2>
+
+			<div ng-repeat="(recipe, data) in recipeData track by $index">
+				{{data.name}} <br>
+			</div>
+			
+			<!-- Section for submitting new ingredients -->
+			<form name="myForm">
+				<h2> Add new Recipe </h2>
+				<label for="rname">Recipe Name:</label>
+				<input type="text" ng-model="recipe.name" name= "rname" required="true" /> <br><br>
+				<label for="ramount">Recipe Price:</label>
+				<input type="text" ng-model="recipe.price" name="rprice" required="true" /> <br><br>
+				<label for="rdescription">Recipe Description:</label>
+				<input type="text" ng-model="recipe.description" name="rdescription" required="true" /> <br><br>
+				
+				<h3> Ingredients </h3>
+				<div class="col-sm">
+					<div ng-repeat="ingredient in ingredientData track by $index">
+						<input type="checkbox" id="ing-{{ingredient.id}}" ng-model="selectedIngredients[$index]" ng-value="ingredient" ng-change="toggleIngredients($index)">
+						<tt> {{ingredient.name}} </tt>
+						</input>
+						<input type="text" required="selectedIngredients[$index]" ng-disabled="!selectedIngredients[$index]" ng-model="ingredient.amount"/>
+					</div>
+				</div>
+				
+				<br>
+
+				<!-- For Future notice, you can disable a button by checking if the textfields you want associated are invalid -->>
+				<button type="button" ng-click="createRecipe()" ng-disabled="myForm.$invalid">Create Recipe</button>
+			</form>
+			
+		</div>
+		
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Login/Sign Up</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<body>
+	<script> 
+    /*<![CDATA[*/
+		var app = angular.module('myApp', []);
+		app.controller('fulfillOrderCtrl', function($scope, $http, $q, $window) {
+			
+			// First Check for Current user
+			$http.get("api/v1/users").then(
+				function(response) {
+					switch(response.data.message) {
+					case "CUSTOMER":
+						$window.location.href = '/customerhome';
+						break;
+					case "ADMIN":
+						$window.location.href = '/index';
+						break;
+					default:
+						break;
+					}
+				}, function(rejection) {
+					$window.location.href = '/index';
+			});
+			
+			// Inventory Data
+			$scope.inventory = {};
+			$scope.inventoryData = [];
+			
+			// Order Data
+			$scope.orders = {};
+			$scope.selectedOrder = {};
+			$scope.selectedRecipe = {};
+			
+			$scope.updateInventory = function () {
+				$http.get("api/v1/inventory").then(function(response) {
+					$scope.inventory = response.data;
+					for (let i = 0; i < $scope.inventory.ingredients.length; i++) {
+						$scope.inventoryData[i] = {};
+						$scope.inventoryData[i].name = $scope.inventory.ingredients[i].name;
+						$scope.inventoryData[i].amount = 0;
+					}
+					console.log($scope.inventoryData);
+				});
+			};
+			
+			$scope.updateOrders = function () {
+				$http.get("api/v1/completeOrder?fulfilled=false").then(function(response) {
+					$scope.orders = response.data;
+					console.log($scope.orders);
+				});
+			};
+			
+			$scope.goHome = function () {
+				$window.location.href = '/staffhome';
+			};
+			
+			$scope.setSelectedOrder = function(ticket) {
+			    $scope.selectedOrder = ticket;
+			    $scope.selectedRecipe = ticket.recipe.ingredients;
+			    console.log(ticket.recipe);
+			};
+			
+			$scope.fulfillOrder = function () {
+				// First try to make the coffee
+				if($scope.selectedOrder == {}) {
+					alert("No order selected");
+				} else {
+					$http.post("api/v1/makecoffee/" + $scope.selectedOrder.recipe.name).then(
+						function(response) {
+							// If successful then fulfill the order
+							$http.put("api/v1/order/" + $scope.selectedOrder.name, {"name": $scope.selectedOrder.name}).then(
+								function(response) {
+									$scope.updateOrders();	
+									$scope.updateInventory();
+								});
+						},
+						function(rejection) {
+							alert(rejection.data.message);
+					});
+				}
+			};
+			
+			$scope.backHome = function() {
+				$window.location.href = '/staffhome';
+			};
+			
+			// For when the page first opens
+			$scope.updateInventory();
+			$scope.updateOrders();
+		});
+	/*]]>*/
+	</script>
+
+	<div layout:fragment="content" class="generic-container ng-cloak"
+		ng-app="myApp" ng-controller="fulfillOrderCtrl as ctrl">
+
+		<!--- Various HTML elements, with extra tags telling Angular how to work with them, go here -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Fulfill Orders </h1>
+				</div>
+				
+				<div>
+					<button type="button" class="button-gohome" ng-click="backHome()">Back Home</button>
+				</div>
+			</div>
+
+		<div class="flex-container">
+			 <div class="flex-item">
+			   <h2> Select Order to Fulfill: </h2>
+			   		<!-- Print a checklist of all orders currently unfulfilled -->
+			   		<form name="orderSelection">
+				   		<li ng-repeat="ticket in orders">
+					   		<label>
+								{{ticket.name}}, {{ticket.recipe.name}}, {{ticket.owner}}
+							</label>
+							<input type="radio" ng-click="setSelectedOrder(ticket)" name="selection" required="true"/>
+						</li>
+			   		</form>
+			   		
+			   		
+			 </div>
+			 <div class="flex-item">
+				<h2>  Current Inventory: </h2>
+				  		<!-- A list of all the ingredients and their amounts needed for the recipe -->
+				 	<div ng-repeat="ingredient in inventoryData track by $index">
+						<tt>- {{ingredient.name}}: {{inventory.ingredients[$index].amount}}</tt>
+					</div>
+				<h2>  Recipe Ingredients: </h2>
+					<!-- A list of all the ingredients and their amounts needed for the recipe -->
+					<div ng-repeat="ingredient in selectedRecipe">
+						<tt>- {{ingredient.name}}: {{ingredient.amount}}</tt>
+					</div>
+					<br>
+			 </div>
+		</div>
+		
+		<!-- Buttons For Submission and Going back to home -->
+		<div class="flex-container">
+			<button ng-click="fulfillOrder()" ng-disabled="orderSelection.selection.$invalid" >Fulfill Order</button>
+		</div>
+		
+		
+	</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Edit Recipe Page</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+</head>
+<!--- Header information about the page -->
+<body>
+	<div layout:fragment="content">
+		<script	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+		<script>
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*<![CDATA[*/ 
+			var app = angular.module('myApp', []);
+			app.controller('populateCtrl', function($scope, $http, $q, $window) {
+				
+				$scope.userName = {};
+				$scope.orderLists = [];
+				$scope.selectedOrder= {};
+				
+				$scope.updateOrders = function() {
+					$http.get("api/v1/completeOrder?fulfilled=true").then(function(response) {
+						$scope.orderLists = [];
+						for(let i = 0; i < response.data.length; i++) {
+							if(response.data[i].owner == $scope.userName && response.data[i].pickedUp == false) {
+								$scope.orderLists.push(response.data[i]);
+							}
+						}
+						
+					});
+				};
+				
+				// First Check for Current user
+				$http.get("api/v1/users").then(
+					function(response) {
+						switch(response.data.message) {
+						case "STAFF":
+							$window.location.href = '/staffhome';
+							break;
+						case "ADMIN":
+							$window.location.href = '/index';
+							break;
+						default:
+							break;
+						};
+						$http.get("api/v1/users/name").then(function(response) {
+							console.log(response.data.name);
+							$scope.userName = response.data.name;
+							$scope.updateOrders();
+						});
+						$scope.updateOrders();
+					}, function(rejection) {
+						$window.location.href = '/index';
+				});
+				
+				$scope.setSelectedOrder = function (order) {
+					$scope.selectedOrder = order;
+				};
+				
+				$scope.pickUpDaOrder = function () {
+					if($scope.selectedOrder != {}) {
+						$http.put("api/v1/pickupOrder/" + $scope.selectedOrder.name).then(function(response) {
+							$scope.updateOrders();
+						}, function(rejection) {
+							alert(rejection.data.message);
+						});
+					}
+					
+				}
+				
+				$scope.backHome = function() {
+					$window.location.href = '/customerhome';
+				};
+
+			// END OF JS PORTION, DONT DELETE LINE BELOW
+			});
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*]]>*/
+		</script>
+
+		<div ng-app="myApp" ng-controller="populateCtrl">
+
+			<!--- Various HTML elements, with extra tags telling Angular how to work with them, go here -->
+			<!-- Title Section -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Pick up Orders </h1>
+				</div>
+				
+				<div>
+					<button type="button" class="button-gohome" ng-click="backHome()">Back Home</button>
+				</div>
+			</div>
+			
+			<!-- Show all orders for current  -->
+			<div class="flex-item">
+			   <h2> Select Order to Fulfill: </h2>
+			   		<!-- Print a checklist of all orders currently unfulfilled -->
+			   		<form name="pickOrders">
+				   		<li ng-repeat="order in orderLists track by $index">
+					   		<label>
+								{{order.name}}
+							</label>
+							<input type="radio" ng-click="setSelectedOrder(order)" name="selection" required="true"/>
+						</li>
+			   		</form>	
+			 </div>
+			 
+			<button type="button" ng-click="pickUpDaOrder()" ng-disabled="pickOrders.selection.$invalid">Pick Up {{selectedOrder.recipe.name}} </button>
+			<button type="button" ng-click="updateOrders()"> Refresh List </button>
+			
+			
+		</div>
+		
+	</div>
+
+</body>
+</html>

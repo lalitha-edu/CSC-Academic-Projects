@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Customer Order</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('customerorderCtrl', function($scope, $http, $window) {
+				
+				$http.get("api/v1/users").then(
+						function(response) {
+							switch(response.data.message) {
+							case "STAFF":
+								$window.location.href = '/staffhome';
+								break;
+							case "ADMIN":
+								$window.location.href = '/index';
+								break;
+							default:
+								break;
+							}
+						}, function(rejection) {
+							$window.location.href = '/index';
+					});
+				
+				$scope.recipes = [];
+				
+				var key = 'requestedDrink';
+				
+				$http.get("api/v1/recipes").then(function(response) {
+					$scope.recipes = response.data;
+				});
+	            
+				$scope.payment = function() {
+					$window.location.href = '/payment';
+				}
+				
+				$scope.setDrink = function(recipeSelected) {
+					$http.put("api/v1/recipes/select", recipeSelected).then(function(response) {
+						return response.data;
+					});
+				}
+				
+				$scope.backHome = function() {
+					$window.location.href = '/customerhome';
+				};
+				
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="customerorderCtrl as ctrl">
+				
+			<!-- Title Section -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Customer - Order Coffee </h1>
+				</div>
+				
+				<div>
+					<button type="button" class="button-gohome" ng-click="backHome()">Back Home</button>
+				</div>
+			</div>
+			
+				<div class="flex-item">
+					<div class="container">
+						<h4>Choose Recipe</h4>
+						<div class="upper-box">
+							<select name="recipeSelect" class="drop-down" ng-model="selectedRecipe" ng-change="setDrink(selectedRecipe)">
+								<option value="">Select a recipe...</option>
+								<option ng-repeat="recipe in recipes" ng-value="recipe">{{recipe.name}}</option>
+							</select>
+						</div>
+						<div class="upper-box" ng-show="selectedRecipe">Price: {{selectedRecipe.price}}</div>
+					</div>
+					<div class="container" ng-show="selectedRecipe">
+						<div class="lower-box">
+							{{selectedRecipe.description}}
+						</div>
+						<div class="image-container">
+							<img ng-src="http://localhost:8080/pictures/{{selectedRecipe.name}}.png" width="350" height="263" style="float:right; border: 5px solid #555;" alt="lol its a stock photo"></img>
+						</div>
+						<button type="button" class="home-button" ng-click="payment()">Order Drink</button>
+					</div>
+				</div>
+		</div>
+	
+	</body>
+</html>

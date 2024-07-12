@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Customer Order History</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('orderhistoryCtrl', function($scope, $http, $window, $q) {
+				
+				$http.get("api/v1/users").then(
+						function(response) {
+							switch(response.data.message) {
+							case "STAFF":
+								$window.location.href = '/staffhome';
+								break;
+							case "ADMIN":
+								$window.location.href = '/index';
+								break;
+							default:
+								break;
+							}
+						}, function(rejection) {
+							$window.location.href = '/index';
+				});
+				
+				$scope.history = [];
+				
+				$scope.currentUser = {};
+				
+				//getting current user
+				function getCurrentUser() {
+			        return $http.get("api/v1/users/name")
+			            .then(function(response) {
+			                $scope.currentUser = response.data;
+			            })
+			            .catch(function(error) {
+			                console.error('Error fetching current user:', error);
+			            });
+			    }
+				
+				
+				//getting order history of current user
+				function getOrderHistory() {
+			        return $http.get("api/v1/User/" + $scope.currentUser.name)
+			            .then(function(response) {
+			                $scope.history = response.data;
+			            })
+			            .catch(function(error) {
+			                console.error('Error fetching order history:', error);
+			            });
+			    }
+				
+				getCurrentUser().then(function() {
+			        getOrderHistory();
+			    });
+				
+				$scope.home = function() {
+					$window.location.href = '/customerhome'
+				}
+			
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="orderhistoryCtrl as ctrl">
+				
+			<h1> Customer - Order History </h1>
+				<div class="flex-container">
+					<table class="table">
+						<thead>
+							<th>Order Ticket</th>
+							<th>Recipe</th>
+							<th>Order Status</th>
+						</thead>
+						<tbody ng-repeat="order in history">
+							<tr class="row">
+								<td>{{order.name}}</td>
+								<td>{{order.recipe.name}}</td>
+								<td>
+									<span ng-if="order.fulfilled && order.pickedUp">Picked Up</span>
+								    <span ng-if="order.fulfilled && !order.pickedUp">Ready For Pick Up</span>
+								    <span ng-if="!order.fulfilled">In progress</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="flex-item">
+						<button type="button" class="home-button" ng-click="home()">Home</button>
+					</div>
+				</div>
+		</div>
+	
+	</body>
+</html>

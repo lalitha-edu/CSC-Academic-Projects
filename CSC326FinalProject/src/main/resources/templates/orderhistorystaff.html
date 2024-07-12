@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customer Order History</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<body>
+    <script>
+        /*<![CDATA[*/
+        var app = angular.module('myApp', []);
+        app.controller('orderhistoryCtrl', function($scope, $http, $window, $q) {
+            
+            $scope.history = [];
+            $scope.totalPrice = 0;
+
+            //getting order history of current user
+            function getOrderHistory() {
+                return $http.get("api/v1/order")
+                    .then(function(response) {
+                        $scope.history = response.data;
+                        calculateTotalPrice();
+                    })
+                    .catch(function(error) {
+                        console.error('Error fetching order history:', error);
+                    });
+            }
+            
+            function calculateTotalPrice() {
+                $scope.totalPrice = $scope.history.reduce(function(total, order) {
+                    return total + order.recipe.price;
+                }, 0);
+            }
+            
+            getOrderHistory();
+            
+            $scope.home = function() {
+                $window.location.href = '/staffhome';
+            }
+        
+        });
+        /*]]>*/
+    </script>
+    <div layout:fragment="content" class="generic-container ng-cloak"
+            ng-app="myApp" ng-controller="orderhistoryCtrl as ctrl">
+            
+        <h1> Staff - Total Order History </h1>
+            <div class="flex-container">
+                <table class="table">
+                    <thead>
+                        <th>Order Ticket</th>
+                        <th>Recipe</th>
+                        <th>Order Status</th>
+                        <th>Recipe Price</th>
+                    </thead>
+                    <tbody ng-repeat="order in history">
+                        <tr class="row">
+                            <td>{{order.name}}</td>
+                            <td>{{order.recipe.name}}</td>
+                            <td>
+                                <span ng-if="order.fulfilled && order.pickedUp">Picked Up</span>
+                                <span ng-if="order.fulfilled && !order.pickedUp">Ready For Pick Up</span>
+                                <span ng-if="!order.fulfilled">In progress</span>
+                            </td>
+                            <td>${{order.recipe.price}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="total-price-label">
+                    <strong>Total From Orders: </strong>${{totalPrice}}
+                </div>
+                <div class="flex-item">
+                    <button type="button" class="home-button" ng-click="home()">Home</button>
+                </div>
+            </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>Customer Home Page</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+	<body>
+		<script>
+		/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+			app.controller('customerhomeCtrl', function($scope, $http, $window) {
+				
+				$http.get("api/v1/users").then(
+						function(response) {
+							switch(response.data.message) {
+							case "STAFF":
+								$window.location.href = '/staffhome';
+								break;
+							case "ADMIN":
+								$window.location.href = '/index';
+								break;
+							default:
+								break;
+							}
+						}, function(rejection) {
+							$window.location.href = '/index';
+					});
+				
+				$scope.makeCoffee = function() {
+					$window.location.href = '/customerorder';
+				};
+				
+				$scope.checkOrder = function() {
+					$window.location.href = '/pickuporder';
+				}
+				
+				$scope.viewHistory = function() {
+					$window.location.href = '/orderhistory'
+				}
+				
+				$scope.signOut = function() {
+					$http.put("api/v1/users").then( function(response) {
+						$window.location.href = '/index';
+					}, function(rejection) {
+						alert(reponse.data.message);
+					});
+				};
+			
+			});
+			/*]]>*/
+		</script>
+		<div layout:fragment="content" class="generic-container ng-cloak"
+				ng-app="myApp" ng-controller="customerhomeCtrl as ctrl"
+         
+			<!-- Title Section -->
+			<div class="flex-titlebar">
+				<div class="flex-item">
+					<h1> Customer - Home </h1>
+					<h2> Welcome to CoffeeMaker! </h2>
+				</div>
+				
+				<div>
+					<button type="button" class="button-signout" ng-click="signOut()">Sign Out</button>
+				</div>
+			</div>	
+			
+			<!-- Content -->
+			<div class="flex-buttonhorizontal">
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button" ng-click="makeCoffee()">Order Coffee</button>
+				</div>
+				<div class="flex-buttonvertical">
+					<button type="button" class="home-button" ng-click="checkOrder()">Check Current Order</button>
+					<button type="button" class="home-button" ng-click="viewHistory()">View Order History</button>
+				</div>
+			</div>
+			
+		</div>
+	
+	</body>
+</html>

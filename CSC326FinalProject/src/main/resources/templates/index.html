@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Login/Sign Up</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" href="css/appstyle.css" />
+</head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<body>
+	<script> 
+    /*<![CDATA[*/
+		var app = angular.module('myApp', []);
+		app.controller('recipesCtrl', function($scope, $http, $window) {
+			
+			$scope.loginData = {};
+			
+			$scope.registerData = {};
+			$scope.confirmPassword = {};
+			
+			
+			$scope.processLogin = function () {
+				console.log($scope.loginData);
+				$http.put("api/v1/users/" + $scope.loginData.name, $scope.loginData).then(
+						function(success) {
+							// If successful, grab what user they are and send them to the correct home page
+							switch(success.data.message) {
+								case "CUSTOMER":
+									// MAP TO CUSTOMER HOME PAGE
+									$window.location.href = '/customerhome';
+									break;
+									// MAP TO STAFF HOME PAGE
+								case "STAFF":
+									$window.location.href = '/staffhome';
+									break;
+									// MAP TO ADMIN HOME (Should check if user is ADMIN)
+								case "ADMIN":
+									$window.location.href = '/staffcreation';
+									break;
+								default:
+									console.log("Type not read");
+							};
+						}).catch(function(error) {
+							console.log(error);
+							alert(error.data.message);
+						});
+			};
+			
+			$scope.processAccountCreation = function () {
+				// First check if passwords are the same
+				if($scope.confirmPassword.password != $scope.registerData.password) {
+					alert("Passwords Do Not Match");
+					return;
+				}
+				// If at this point, we set the type to CUSTOMER
+				$scope.registerData.type = 1;
+				console.log($scope.registerData);
+				$http.post("api/v1/users",  $scope.registerData).then(
+						function(response) {
+							$scope.registerData = {};
+							$scope.confirmPassword = {};
+						}).catch(function(error) {
+							$window.alert(error.data.message);
+						});
+			};
+			
+			$scope.togglePassword = function () { 
+				$scope.typePassword = !$scope.typePassword; 
+			};
+			
+			$scope.toggleRegisterPassword = function () { 
+				$scope.typeRegisterPassword = !$scope.typeRegisterPassword; 
+			};
+			
+			$scope.privacy = function() {
+				$window.location.href = '/privacy';
+			}
+			
+		});
+	/*]]>*/
+	</script>
+
+	<div layout:fragment="content" class="generic-container ng-cloak"
+		ng-app="myApp" ng-controller="recipesCtrl as ctrl">
+
+		<h1>Coffee Maker</h1> <br>
+
+		<div class="flex-container">
+			 <div class="flex-item">
+			   	<h2> Login </h2>
+			   	<form name="loginForm">
+			   		<label for="login_username">Username:</label>
+			   		<br>
+					<input name="login_username" placeholder="Username" type="text" required="true" ng-model="loginData.name"/>
+					<br> <br>
+					<label for="login_password">Password:</label>
+					<!-- Password toggle based on: https://stackoverflow.com/questions/29224920/how-can-we-make-show-hide-password-input-in-angular-js-with-bootstrap-3 -->
+					<span class="showPassword" ng-click="togglePassword()"></span>
+					<br> 
+					<input type="{{ typePassword ? 'text' : 'password' }}" name="password" placeholder="Password" required="true" ng-model="loginData.password"> 
+					
+					<!-- An element to toggle between password visibility -->
+					<input type="checkbox" ng-click="togglePassword()">Show Password
+					<br> <br>
+					<button type="button" ng-click="processLogin()" ng-disabled="loginForm.$invalid">Log In</button>
+			   	</form>
+			 </div>
+			 <div class="flex-item">
+			   <h2> Register Account </h2>
+			   <form name="registerForm">
+			   		<label for="register_username">Username:</label>
+			   		<br>
+					<input name="register_username" placeholder="Username" type="text" required="true" ng-model="registerData.name"/>
+					<br> <br>
+					<label for="register_password">Password:</label>
+					<!-- Password toggle based on: https://stackoverflow.com/questions/29224920/how-can-we-make-show-hide-password-input-in-angular-js-with-bootstrap-3 -->
+					<span class="showPassword" ng-click="toggleRegisterPassword()"></span>
+					<br> 
+					<input type="{{ typeRegisterPassword ? 'text' : 'password' }}" name="password" placeholder="Password" required="true" ng-model="registerData.password"> 
+					<br>
+					<input type="{{ typeRegisterPassword ? 'text' : 'password' }}" name="confirmPassword" placeholder="Confirm Password" required="true" ng-model="confirmPassword.password"> 
+					<!-- An element to toggle between password visibility -->
+					<input type="checkbox" ng-click="toggleRegisterPassword()">Show Password
+					<br> <br>
+					<button type="button" ng-click="processAccountCreation()" ng-disabled="registerForm.$invalid">Add Account</button>
+			   	</form>
+			 </div>
+			 
+			 <button type="button" ng-click="privacy()">Privacy Policy</button>
+		</div>
+		
+	</div>
+
+
+
+</body>
+</html>
