@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html ng-app="myApp">
+<head>
+    <title>Add a Recipe</title>
+    <style>
+        input.ng-valid {
+            background-color: lightgreen;
+        }
+
+        input.ng-dirty.ng-invalid-required,input.ng-dirty.ng-invalid-number {
+            background-color: red;
+        }
+
+        input.ng-dirty.ng-invalid-min {
+            background-color: yellow;
+        }
+    </style>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+
+    <script>
+        var app = angular.module('myApp', []);
+        app.controller('addRecipeCtrl', function($scope, $http, $window) {
+
+            $scope.recipe = {
+                name: '',
+                price: '',
+                ingredients: []
+            };
+            
+            
+
+            $http.get("/api/v1/inventoryIngredients").then(
+                function(response) {
+                    // Handle successful response
+                    $scope.inventory = response.data;
+                }, 
+                function(error) {
+                    // Handle error
+                    console.error("Error while fetching inventory:", error);
+                }
+            );
+            
+           
+
+            $scope.toggleIngredient = function(ingredient) {
+                ingredient.selected = !ingredient.selected;
+                
+            };
+
+            $scope.addRecipe = function() {
+                // Collect selected ingredients and their amounts
+                $scope.recipe.ingredients = $scope.inventory.filter(function(ingredient) {
+                    return ingredient.selected;
+		         }).map(function(ingredient) {
+                    return { name: ingredient.name, amount: ingredient.amount }; 
+                });
+
+                // Send request to save the recipe
+                $http.post("/api/v1/recipes", $scope.recipe)
+                    .then(function(response) {
+                        // Handle successful response
+                        console.log('Recipe created successfully:', response.data);
+                        // Display saved recipe in a pop-up
+                        $window.alert("Recipe saved successfully!\n\nName: " + $scope.recipe.name + "\nPrice: " + $scope.recipe.price + "\nIngredients: " + JSON.stringify($scope.recipe.ingredients));
+                        // Optionally, reset form or perform other actions
+                        $scope.reset();
+                    })
+                    .catch(function(error) {
+                    	console.error(error.data.message); // Log the error message to the console
+                    	if (error.data.message === "Price must be a positive value") {
+                        	$window.alert("Price must be a positive value ");
+                        } else if (error.data.message === "Insufficient space in recipe book for recipe") {
+                            $window.alert("There are already 3 recipes in the log");
+                        } else if (error.data.message === "Recipe with the name already exists") {
+                        	$window.alert("Recipe with the name already exists ");
+                        } else if (error.data.message === "Insufficient ingredients count") {
+                                $window.alert("Insufficient Ingredients to Add Recipe");
+                        } else if (error.data.message === "Amount must be a positive value") {
+                                $window.alert("Amount must be a positive value");
+                        }
+                    
+                        // Handle error
+                        console.error('Error creating recipe:', error);
+        
+                    });
+                
+                
+                console.log($scope.recipe.name);
+                console.log($scope.recipe.price);
+                console.log($scope.recipe.ingredients);
+            };
+            
+            $scope.selectedIngredients = [];
+
+            $scope.reset = function() {
+                // Reset form logic
+                $scope.recipe = {
+                    name: '',
+                    price: '',
+                    ingredients: []
+                };
+               
+                
+                $scope.inventory.forEach(function(ingredient) {
+                    ingredient.selected = false;
+                    ingredient.amount = 0;
+                });
+                
+            };
+        });
+
+    </script>
+
+    <div ng-app="myApp" class="generic-container ng-cloak" ng-controller="addRecipeCtrl as ctrl" data-ng-init="reset()">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span class="lead">Add a Recipe</span>
+            </div>
+
+            <div class="formcontainer">
+                <form name="addRecipeForm" class="form-horizontal">
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="col-md-4 control-label" for="name">Recipe Name</label>
+                            <div class="col-md-8">
+                                <input type="text" ng-model="recipe.name" name="name" class="form-control" placeholder="Enter recipe name" required />
+                                <div class="has-error" ng-show="addRecipeForm.$dirty">
+                                    <span ng-show="addRecipeForm.name.$error.required">This is a required field.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="col-md-4 control-label" for="price">Price</label>
+                            <div class="col-md-8">
+                                <input type="number" ng-model="recipe.price" name="price" class="form-control" placeholder="Enter recipe price" required min="0"/>
+                                <div class="has-error" ng-show="addRecipeForm.$dirty">
+                                    <span ng-show="addRecipeForm.price.$error.required">This is a required field.</span>
+                                    <span ng-show="addRecipeForm.price.$error.min">Minimum amount is 0.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label class="col-md-2 control-label">Ingredients</label>
+                            <div class="col-md-7">
+                                <div class="row" ng-repeat="ingredient in inventory">
+                                    <div class="col-md-8">
+                                        <input type="checkbox" ng-model="ingredient.selected" ng-change="updateIngredient(ingredient)"> {{ingredient.name}}</div>
+                                    <div class="col-md-4">
+                                        <input type="number" ng-model="ingredient.amount" name="amount_{{$index}}" ng-disabled="!ingredient.selected" required min="0" class="form-control" placeholder="Enter ingredient amount">
+                                        <div class="has-error" ng-show="addRecipeForm.$dirty && !ingredient.selected">
+                                    		<span ng-show="addRecipeForm.amount_$index.$error.required">This is a required field.</span>
+                                    		<span ng-show="addRecipeForm.amount_$index.$error.min">Minimum amount is 0.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <div class="col-md-offset-2 col-md-7">
+                                <button type="button" class="btn btn-primary" ng-click="addRecipe()">Add Recipe</button>
+                                <button type="button" class="btn btn-warning" ng-click="reset()">Reset Form</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <a href="/index">Home</a>
+
+</body>
+</html>

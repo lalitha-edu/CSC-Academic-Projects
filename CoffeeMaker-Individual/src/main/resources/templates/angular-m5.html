@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html>
+<!--- Header information about the page -->
+<body>
+	<div layout:fragment="content">
+		<script
+			src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+		<script>
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*<![CDATA[*/
+			var app = angular.module('myApp', []);
+
+			app.controller('populateCtrl', function($scope, $http, $q) {
+
+				$scope.myfunction = function(a) {
+					alert("You entered in: " + a);
+					console.log("HERE");
+				}
+
+				$scope.math = function(a, b) {
+					return (a - b);
+				}
+
+				/* $http.get("/api/v1/recipes").then(function(response) {
+					$scope.recipes = response.data;
+				});
+
+				$http.post("/api/v1/recipes", $scope.recipe).then(
+						function(success) {
+							$scope.success = true;
+						}, function(rejection) {
+							console.error("Error while adding recipe");
+						}); */
+
+				$scope.listRecipes = [ {
+					value : 1,
+					display : 'Mocha'
+				}, {
+					value : 2,
+					display : 'Latte'
+				}, {
+					value : 3,
+					display : 'Frappe'
+				}, {
+					value : 4,
+					display : 'Cold Brew'
+				} ];
+
+				$scope.ingre = [ "vanilla", "coffee", "sugar", "chocolate",
+						"milk", "cinnamon", "whipped cream" ];
+
+				$scope.recipeData = {
+					"Mocha" : [ {
+						"name" : "Coffee",
+						"amount" : 20
+					}, {
+						"name" : "Milk",
+						"amount" : 10
+					}, {
+						"name" : "Vanilla",
+						"amount" : 5
+					} ],
+					"Latte" : [ {
+						"name" : "Coffee",
+						"amount" : 20
+					}, {
+						"name" : "Chocolate",
+						"amount" : 7
+					}, {
+						"name" : "Sugar",
+						"amount" : 4
+					} ]
+				};
+
+			});
+
+			/* Without these comments, Thymeleaf will try to parse the Javascript as XML and break itself sometimes */
+			/*]]>*/
+		</script>
+
+		<div ng-app="myApp" ng-controller="populateCtrl">
+
+			<!--- Various HTML elements, with extra tags telling Angular how to work with them, go here -->
+			<div class="col-sm">
+				Enter a number: <input type="text" ng-model="z" required="true" />
+				<button ng-click="myfunction(z)" type="button">Click Me!</button>
+			</div>
+
+			<div class="col-sm">
+				Enter two numbers for subtraction: <input type="text" ng-model="x"
+					required="true" /> <input type="text" ng-model="y" required="true" />
+				The result is {{math(x,y)}}
+			</div>
+
+			<div class="col-sm">
+				Select Recipe: <br /> <select ng-model="resipe"
+					ng-options="item as item.display for item in listRecipes"
+					required="true">
+					<option value="value">Select time interval for viewing
+						data</option>
+				</select>
+			</div>
+
+			<div class="col-sm">
+				(Optional) Select the ingredients <br />
+				<div ng-repeat="ing in ingre track by $index">
+					<input type="checkbox" ng-model="$parent.selectedBranches[ing]">
+					<tt>{{ing}}</tt>
+					</input>
+				</div>
+			</div>
+
+			<div ng-repeat="(name, ingredients) in recipeData track by $index">
+				Ingredients for {{name}}:<br />
+				<ul id="{{name}}">
+					<li ng-repeat="ingredient in ingredients">{{ingredient.name}}: {{ingredient.amount}}</li>
+				</ul>
+			</div>
+
+			<!-- the { and } are spread out here for display. In practice,
+                                 there are not spaces between the two { before and the two } after
+                                 the expression -->
+
+		</div>
+
+
+
+	</div>
+
+</body>
+</html>

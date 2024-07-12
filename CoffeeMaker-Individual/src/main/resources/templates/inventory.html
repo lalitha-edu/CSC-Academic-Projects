@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Inventory</title>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <style>
+        /* Remove ng-invalid class when input value is negative */
+        input.ng-valid {
+            background-color: lightgreen;
+        }
+
+        input.ng-dirty.ng-invalid-required,input.ng-dirty.ng-invalid-number {
+            background-color: red;
+        }
+
+        input.ng-dirty.ng-invalid-min {
+            background-color: yellow;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+</head>
+
+<body>
+
+<div class="generic-container ng-cloak" ng-app="myApp" ng-controller="inventoryCtrl as ctrl">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="lead">View Inventory</span>
+        </div>
+        <div ng-repeat="item in inventoryOriginal">
+            {{item.name}}: <span ng-bind="item.amount"></span><br />
+        </div>
+        <div class="panel-heading">
+            <span class="lead">Update Inventory Form </span>
+        </div>
+        <div class="formcontainer">
+            <form ng-submit="submit()" name="addInventoryForm" class="form-horizontal">
+                <div class="row" ng-repeat="item in inventoryOriginal">
+                    <div class="form-group col-md-12">
+                        <label class="col-md-2 control-lable" for="{{item.name}}">{{item.name}}</label>
+                        <div class="col-md-7">
+                            <!-- Remove ng-invalid class when value is negative -->
+                            <input type="number" ng-model="updateIngredients[$index].amount" name="{{item.name}}" class="{{item.name}} form-control input-sm" placeholder="Enter amount of {{item.name}}" required="0" ng-class="{ 'ng-invalid': addInventoryForm[item.name].$error.min && addInventoryForm[item.name].$dirty && updateIngredients[$index].amount < 0 }"/>
+                            <div class="has-error" ng-show="addInventoryForm.$dirty">
+                                <span ng-show="addInventoryForm[item.name].$error.required">This is a required field.</span>
+                                <span ng-show="addInventoryForm[item.name].$error.min">Minimum amount is 0.</span>
+                                <!-- Display error message in a popup -->
+                                <span ng-show="addInventoryForm[item.name].$dirty && updateIngredients[$index].amount < 0" ng-init="updateIngredients[$index].amount = null; showAlert(item.name)">Negative amount is not allowed. Click Submit to proceed.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-actions floatRight">
+                        <input type="submit" value="Submit" class="btn btn-primary btn-sm" ng-disabled="addInventoryForm.$invalid" />
+                        <button type="button" ng-click="reset()" class="btn btn-warning btn-sm" ng-disabled="addInventoryForm.$pristine">Reset Form</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div ng-show="success">Inventory Successfully Updated</div>
+        <div ng-show="failure">Error while updating inventory.</div>
+    </div>
+    <a href="/index">Home</a>
+</div>
+
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('inventoryCtrl', function($scope, $http, $window) {
+        $scope.inventoryOriginal = [];
+        $scope.updateIngredients = [];
+
+        $scope.getInventoryIngredients = function() {
+            $http.get("/api/v1/inventoryIngredients")
+                .then(function(response) {
+                    $scope.inventoryOriginal = response.data;
+                    // Initialize updateIngredients with amounts set to 0
+                    $scope.initUpdateIngredients();
+                })
+                .catch(function(error) {
+                    console.error("Error while fetching inventory:", error);
+                });
+        }
+
+        // Initialize updateIngredients with amounts set to zero
+        $scope.initUpdateIngredients = function() {
+            $scope.updateIngredients = $scope.inventoryOriginal.map(function(item) {
+                return { ...item, amount: 0 };
+            });
+        }
+
+        $scope.updateInventory = function() {
+            $scope.success = false;
+            $scope.failure = false;
+
+            var updatedAmounts = $scope.updateIngredients.map(function(ingredient) {
+                return ingredient.amount;
+            });
+
+            $http.put("/api/v1/updateInventory", updatedAmounts)
+                .then(function(response) {
+                    $scope.getInventoryIngredients();
+                    $scope.success = true;
+                })
+                .catch(function(error) {
+                    if (error.status === 409) {
+                        $window.alert("Ingredient amount cannot be negative.");
+                    }
+                    
+                    console.error("Error while updating Inventory:", error);
+                });
+        }
+
+        $scope.submit = function() {
+            $scope.updateInventory();
+            $scope.reset();
+        }
+
+        $scope.reset = function() {
+            // Reset updateIngredients to initial state with amounts set to 0
+            $scope.initUpdateIngredients();
+            if ($scope.addInventoryForm) {
+                $scope.addInventoryForm.$setPristine();
+                $scope.addInventoryForm.$setUntouched();
+            }
+        }
+
+        $scope.getInventoryIngredients();
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE HTML>
+<html ng-app="myApp">
+<head>
+    <title>Edit Recipe</title>
+    <style>
+        input.ng-valid {
+            background-color: lightgreen;
+        }
+
+        input.ng-dirty.ng-invalid-required,input.ng-dirty.ng-invalid-number {
+            background-color: red;
+        }
+
+        input.ng-dirty.ng-invalid-min {
+            background-color: yellow;
+        }
+    </style>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
+
+    <script>
+        var app = angular.module('myApp', []);
+        app.controller('editRecipeCtrl', function($scope, $http, $window) {
+            // Initialize recipes array
+            $scope.recipes = [];
+            $scope.availableIngredients = []; // Store available ingredients
+
+            // Fetch recipes from the server and populate available ingredients
+            $http.get("/api/v1/recipes")
+                .then(function(response) {
+                    // Handle successful response
+                    $scope.recipes = response.data;
+                })
+                .catch(function(error) {
+                    // Handle error
+                    console.error("Error while fetching list of recipes", error);
+                });
+
+            // Function to edit a recipe
+            $scope.editRecipe = function() {
+                // Find the selected recipe
+                var selectedRecipe = $scope.recipes.find(function(recipe) {
+                    return recipe.selected;
+                });
+
+                if (selectedRecipe) {
+                    // Display the selected recipe details
+                    $scope.editingRecipe = angular.copy(selectedRecipe);
+                    // Populate available ingredients
+                    $http.get("/api/v1/inventoryIngredients")
+                        .then(function(response) {
+                            // Filter out ingredients already present in the recipe
+                            $scope.availableIngredients = response.data.filter(function(ingredient) {
+                                // Check if the ingredient name is not present in the editing recipe's ingredients
+                                return !$scope.editingRecipe.ingredients.some(function(existingIngredient) {
+                                    return existingIngredient.name === ingredient.name;
+                                });
+                            });
+                        });
+                } else {
+                    $window.alert("Please select a recipe to edit.");
+                }
+            };
+            
+            // Function to add selected ingredient to the recipe
+            $scope.addSelectedIngredient = function(ingredient) {
+                $scope.editingRecipe.ingredients.push({
+                    name: ingredient.name,
+                    amount: ingredient.amount
+                });
+                
+                // Remove the selected ingredient from available ingredients
+                var index = $scope.availableIngredients.findIndex(function(availIngredient) {
+                    return availIngredient.name === ingredient.name;
+                });
+                
+                if (index !== -1) {
+                    $scope.availableIngredients.splice(index, 1);
+                }
+            };
+            
+            // Function to delete selected ingredients from the recipe
+            $scope.deleteIngredient = function() {
+                // Get the selected ingredients
+                $scope.selectedIngredients = $scope.editingRecipe.ingredients.filter(function(ingredient) {
+                    return ingredient.selected;
+                }).map(function(ingredient) {
+                    return { name: ingredient.name, amount: ingredient.amount }; 
+                });
+                
+                // Loop through selected ingredients to remove them from the editing recipe
+                $scope.selectedIngredients.forEach(function(selectedIngredient) {
+                    var index = $scope.editingRecipe.ingredients.findIndex(function(ingredient) {
+                        return ingredient.name === selectedIngredient.name;
+                    });
+                    
+                    if (index !== -1) {
+                        // Remove the ingredient from the editing recipe
+                        var removedIngredient = $scope.editingRecipe.ingredients.splice(index, 1)[0];
+                        // Add the deleted ingredient back to available ingredients
+                        $scope.availableIngredients.push({
+                            name: removedIngredient.name,
+                            amount: removedIngredient.amount
+                        });
+                    }
+                });
+            };
+            
+            // Function to edit selected ingredients in the recipe
+            $scope.editIngredients = function() {
+                // Get the selected ingredients
+                $scope.selectedIngredients = $scope.editingRecipe.ingredients.filter(function(ingredient) {
+                    return ingredient.selected;
+                });
+
+        
+                    // Print the updated ingredients in the console
+                    console.log('Updated ingredients:', $scope.editingRecipe.ingredients);
+               
+            };
+
+            // Function to save edited recipe
+            $scope.saveRecipe = function() {
+                // Send request to update the recipe
+                $http.put("/api/v1/recipes/" , $scope.editingRecipe)
+                    .then(function(response) {
+                        // Handle successful response
+                        console.log('Recipe updated successfully:', response.data);
+                        $window.alert("Recipe updated successfully!");
+                        // Optionally, reset form or perform other actions
+                        $scope.reset();
+                    })
+                    .catch(function(error) {
+                        // Handle error
+                        
+	                   if (error.data.message === "Price must be a positive value") {
+	                   	$window.alert("Price must be a positive value.");
+	                   } 
+	                   else if (error.data.message === "Amount must be a positive value") {
+	                	   $window.alert("Invalid ingredient value. Minimum value is 1.");
+	                   }
+                        
+	                   else if (error.data.message === "Insufficient ingredients count") {
+	                	   $window.alert("Insufficient ingredients count.");
+	               	   }  else {
+	                       // If the error structure is not as expected or there's no message
+	                       console.error("An error occurred: ", error.data); // Log the full error for debugging
+	                       $window.alert("An unexpected error occurred. Please try again."); // Show a generic error message
+	                   }
+                        
+                        
+                        
+                    });
+            };
+
+            // Function to reset the form
+            $scope.reset = function() {
+                // Reset form logic
+                $scope.editingRecipe = null;
+            };
+
+        });
+    </script>
+
+    <div ng-app="myApp" class="generic-container ng-cloak" ng-controller="editRecipeCtrl as ctrl" data-ng-init="reset()">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span class="lead">Edit Recipe</span>
+            </div>
+
+            <div class="formcontainer">
+                <form name="editRecipeForm" class="form-horizontal" ng-show="editingRecipe">
+
+                    <!-- Recipe Details -->
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label class="col-md-4 control-label">Recipe Name</label>
+                            <div class="col-md-8">
+                                <input type="text" ng-model="editingRecipe.name" class="form-control" required />
+                                <div class="has-error" ng-show="editRecipeForm.$dirty && !editingRecipe.name">
+                                    <span>This is a required field.</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label class="col-md-4 control-label">Price</label>
+                            <div class="col-md-8">
+                                <input type="number" ng-model="editingRecipe.price" class="form-control" required min="0"/>
+                                <div class="has-error" ng-show="editRecipeForm.$dirty && !editingRecipe.price">
+                                    <span>This is a required field.</span>
+                                    <span ng-show="editingRecipe.price < 0">Price must be a positive value</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                   <!-- Ingredients -->
+					<div class="row">
+					    <div class="form-group col-md-12">
+					        <label class="col-md-2 control-label">Ingredients</label>
+					        <div class="col-md-10">
+					            <div class="checkbox" ng-repeat="ingredient in editingRecipe.ingredients">
+					                <label>
+					                    <input type="checkbox" ng-model="ingredient.selected"> {{ingredient.name}}
+					                    <input type="number" ng-model="ingredient.amount" class="form-control" placeholder="Amount" />
+					                </label>
+					            </div>
+					        </div>
+					    </div>
+					</div>
+
+                    <!-- Display Available Ingredients -->
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label class="col-md-2 control-label">Available Ingredients</label>
+                            <div class="col-md-10">
+                                <div class="checkbox" ng-repeat="ingredient in availableIngredients">
+                                    <label>
+                                        <input type="checkbox" ng-model="ingredient.selected"> {{ingredient.name}}
+                                        <input type="number" ng-model="ingredient.amount" class="form-control" placeholder="Amount" />
+                                        <button type="button" class="btn btn-success" ng-click="addSelectedIngredient(ingredient)">Add</button>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Recipe Button -->
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <div class="col-md-offset-2 col-md-7">
+                                <button type="button" class="btn btn-primary" ng-click="saveRecipe()">Save Recipe</button>
+                                <button type="button" class="btn btn-warning" ng-click="reset()">Reset Form</button>
+                                <button type="button" class="btn btn-danger" ng-click="deleteIngredient()">Delete Ingredient</button>
+                                <!-- Add "Edit Ingredient" button -->
+                                <button type="button" class="btn btn-warning" ng-click="editIngredients()">Edit Ingredient</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Available Recipes with Checkboxes -->
+            <div class="row" ng-show="!editingRecipe">
+                <div class="form-group col-md-12">
+                    <label class="col-md-2 control-label">Available Recipes</label>
+                    <div class="col-md-10">
+                        <div class="checkbox" ng-repeat="recipe in recipes">
+                            <label>
+                                <input type="checkbox" ng-model="recipe.selected"> {{recipe.name}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Recipe Button -->
+            <div class="row" ng-show="!editingRecipe">
+                <div class="form-group col-md-12">
+                    <div class="col-md-offset-2 col-md-7">
+                        <button type="button" class="btn btn-primary" ng-click="editRecipe()">Edit Recipe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="/index">Home</a>
+</body>
+</html>
