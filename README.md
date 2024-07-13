@@ -93,3 +93,45 @@ Other assistence was mainly focused in on design aspects, such as creating the d
 
 Design: 
 images/StaffFulfillsOrder.png -- Developed the wireframe for the fulfill order workflow for the order use case. 
+
+Developer's Guide - Developed this guide to support a developer who may download or try to create this project.
+
+# Developer's Guide
+**Import CoffeeMaker into Eclipse Workspace**
+- To clone the repository through eclipse workspace
+  1. Select Clone Git Repository
+  2. Select Clone URL
+  3. The GitHub clone url should autofill into the fields
+
+- To import the your project within the Eclipse Workspace:
+  1. Right- click in the Package Explorer and select **Import...>Maven>Existing Maven Projects**
+  2. Browse and select your local repository location
+  3. Click Finish
+
+Provide your workspace time to build, close eclipse and restart. If restart does not assist, delete the CoffeeMaker project, along with cloned github repository and restart steps with a fresh Maven Setup.
+
+# CoffeeMaker Properties
+
+CoffeeMaker contains a properties file that must be set up for proper interaction to occur between the database and our code base. 
+
+To ensure this, copy the ```CoffeeMaker/src/main/resources/application.yml.template``` into ```CoffeeMaker/src/main/resources/application.yml.```
+
+Add in your SQL credentials (password) in the 'password:' field. Make sure the file is named exactly ```application.yml``` or else the gitignore setup will not work.
+
+# Run JUnit Tests
+
+- To run all the unit tests associated with the project, right click on the CoffeeMaker project, select **RunAs>JUnit**.
+
+- To run individual or package specific unit tests, select the package, right click on the test package select RunAs>JUnit.
+    - Example: To run persistence class unit tests, select edu.ncsu.csc.CoffeeMaker.unit and select **RunAs>JUnit**
+
+- To run individual test classes, select the specific test class right click and select RunAs>JUnit.
+    - Example: To run IngredientTest, select IngredientTest, right click and select **RunAs>JUnit**
+
+# Run Checkstyle 
+
+CoffeeMaker has been set up with the CSC Checkstyle configuration in ```src/test/resources/reporting/csc_checkstyle.xml```. You can update your local Checkstyle to use the updated configuration file in your CoffeeMaker project.
+
+# Creating a new User
+
+With this version of CoffeeMaker, the different types of users are simply placed within an enum and given upon construction.  The individual functions within ```User.java``` do all the checks for if each user is able to perform specific actions.  API to retrieve User objects merely return their types while the rest of the User information is kept within the application.  With this, the frontend pages can designate the desired flow for what this user can access (Adding to ```MappingController.java``` and the respective controllers for actions on specific objects)
