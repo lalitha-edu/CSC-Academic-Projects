@@ -5,7 +5,7 @@ This is the large team final project, duration at half a semester long with full
 # CoffeeMaker - Individual
 This portion of the CoffeeMaker project focuses on the individual deliverables for the onboarding project that took place during the first half of the semster. I display experience in both, design, backend and front end testing nd development.
 
-**Images Folder Within CoffeeMaker - Individual:
+**Images Folder Within CoffeeMaker - Individual:**
 -Copy of W3 Wirefram U4.drawio.png - Experince in developing a UX Design through a wireframe for the workflows of the use cases for the CoffeeMaker project
 
 -IndividualDynamicDesignFinal.png - Experience in developing dynamic design through Sequence Diagrams for a specific workflow for the CoffeeMaker project
