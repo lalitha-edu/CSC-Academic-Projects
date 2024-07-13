@@ -1,9 +1,5 @@
-# CoffeeMakerFinalProject
-This is the large team final project, duration at half a semester long with full functionality of CoffeeMaker Website
-
-
 # CoffeeMaker - Individual
-This portion of the CoffeeMaker project focuses on the individual deliverables for the onboarding project that took place during the first half of the semster. I display experience in both, design, backend and front end testing nd development.
+This portion of the CoffeeMaker project is also team based, but this focuses on the specific individual deliverables for the onboarding project that took place during the first half of the semster. I display experience in both, design, backend and front end testing nd development.
 
 **Images Folder Within CoffeeMaker - Individual:**
 -Copy of W3 Wirefram U4.drawio.png - Experince in developing a UX Design through a wireframe for the workflows of the use cases for the CoffeeMaker project
@@ -82,3 +78,18 @@ API Implementation:
 Persistence Development:
   Ingredient.java -- Persistence class development, basic functionality of an ingredient object class
   Inventory.java -- Persistence class development functinality of back end to check ingredients in inventory, edit ingredients, add ingredients, and remove ingredients. 
+
+
+# CoffeeMakerFinalProject
+This is the large team final project, that occurred during the second half of the semester. This is a fully functional of CoffeeMaker Website as per requirements provided.
+
+For the larger team project, our team decides to split of into sub-teams since we had all gotten experience in design, front end and back end impelmetnation and testing during the CoffeeMaker Onboarding Project. I was on the persistence team.
+
+OrderTicket.java -- Persistence Class written that focuses on the ticket object, handeling all details a order ticket should hold, along with methods that assist in the pick up order and order fulfilled functionality.
+
+orderhistorystaff.html -- Front End HTML implementation for the order history for a staff login, functionalities for total money earned on a particualr day, a list of all orders. 
+
+Other assistence was mainly focused in on design aspects, such as creating the dynamic designs and wireframes to support the front end team. Adding any necessary changes to the model classes depending on design changes between the back end (api calls and front end users). Facilitated these changes and communicated between the teams to support. 
+
+Design: 
+images/StaffFulfillsOrder.png -- Developed the wireframe for the fulfill order workflow for the order use case. 
