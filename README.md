@@ -1,5 +1,5 @@
 # CoffeeMaker - Individual
-This portion of the CoffeeMaker project is also team based, but this focuses on the specific individual deliverables for the onboarding project that took place during the first half of the semster. I display experience in both, design, backend and front end testing nd development.
+This portion of the CoffeeMaker project is also team based, but this focuses on the specific individual deliverables for the onboarding project that took place during the first half of the semster. I display experience in both, design, backend and front end testing nd development. Specific files or classes I have worked with are listed below.
 
 **Images Folder Within CoffeeMaker - Individual:**
 -Copy of W3 Wirefram U4.drawio.png - Experince in developing a UX Design through a wireframe for the workflows of the use cases for the CoffeeMaker project
@@ -81,7 +81,7 @@ Persistence Development:
 
 
 # CoffeeMakerFinalProject
-This is the large team final project, that occurred during the second half of the semester. This is a fully functional of CoffeeMaker Website as per requirements provided.
+This is the large team final project, that occurred during the second half of the semester. This is a fully functional of CoffeeMaker Website as per requirements provided. Specific files or classes I have worked with are listed below.
 
 For the larger team project, our team decides to split of into sub-teams since we had all gotten experience in design, front end and back end impelmetnation and testing during the CoffeeMaker Onboarding Project. I was on the persistence team.
 
