@@ -76,4 +76,9 @@ inventory.html -- Developed the front end portion for the inventory page (that c
 editRecipe.html -- Developed the front end portion for the editRecipe page (that controls the use case to edit a Recipe, by adding or deleting ingredients, updating name and/or price)
 
 BACK-END Implementation:
+API Implementation:
+  APIInventoryController.java -- Developed the REST API Calls used to fulfill the update inventory use case, such as add ingredients, delete ingredients and update ingredients in inventory
 
+Persistence Development:
+  Ingredient.java -- Persistence class development, basic functionality of an ingredient object class
+  Inventory.java -- Persistence class development functinality of back end to check ingredients in inventory, edit ingredients, add ingredients, and remove ingredients. 
