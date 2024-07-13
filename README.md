@@ -70,3 +70,10 @@ Data Details: The user provides the program with the name of the recipe to get a
   }
 ```
 If we instead call the endpoint as POST/recipes/{Latte}/addIngredient/{milk}/{error}, we would expect an 404/Not Found and no ingredient JSON data.
+
+FRONT-END Implementation:
+inventory.html -- Developed the front end portion for the inventory page (that controls the use case to add and remove ingredients from the inventory for the CoffeeMaker)
+editRecipe.html -- Developed the front end portion for the editRecipe page (that controls the use case to edit a Recipe, by adding or deleting ingredients, updating name and/or price)
+
+BACK-END Implementation:
+
